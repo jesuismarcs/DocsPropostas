@@ -7,11 +7,15 @@
 
 Reutilize os dados da empreitada, reveja a informação e gere documentos Word a partir dos seus próprios modelos.
 
-[Começar](#começar-em-poucos-passos) · [Guia de utilização](docs/UTILIZACAO.md) · [Formato Excel e modelos](docs/FORMATOS.md)
+[Começar](#começar-em-poucos-passos) · [Guia de utilização](docs/CONFIGURACAO.md) · [Formato Excel e modelos](docs/FORMATOS.md)
 
 </div>
 
 ---
+
+## Nova edição configurável — piloto
+
+Inclui **Definições**, perfis partilháveis, mapeamento visual de Excel, campos personalizados e catálogo de habilitações editável. O **Padrão Marcos** preserva as associações originais. [Configurar o seu modelo](docs/CONFIGURACAO.md).
 
 ## Mais tempo para preparar a proposta
 
@@ -95,9 +99,9 @@ DocsPropostas/
 - Geração DOCX, preservação de caracteres especiais, variáveis em falta e proteção contra sobrescrita cobertas por testes.
 - Classes de alvará empresariais removidas: são preenchidas pelo utilizador. O catálogo é uma base de seleção, não uma validação de habilitações.
 - A aplicação não calcula preços nem certifica conformidade documental; os documentos finais devem ser revistos.
-- A geração é sequencial: uma falha pode deixar documentos anteriores já gerados na pasta.
+- Todos os modelos são preparados numa pasta temporária antes da publicação; ficheiros existentes são preservados.
 - Não inclui modelos contratuais, assinatura digital, exportação PDF ou executável pré-compilado.
-- O funcionamento integral da interface ainda requer validação manual no ambiente de utilização.
+- Construção da interface e das definições verificada localmente; utilização integral com modelos de terceiros ainda requer validação piloto.
 
 [Testes e análise técnica](docs/ANALISE-TECNICA.md) · [Alterações desta edição](CHANGELOG.md)
 

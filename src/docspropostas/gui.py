@@ -10,6 +10,9 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 
 import sv_ttk
 from . import config_manager
+from toolkit.profiles import ProfileStore
+from toolkit.mapping import Mapper
+from toolkit.settings_ui import SettingsWindow
 from .alvara_gui import AlvaraApp
 from .data_logic import extrair_lista_de_documentos_pandas, gerar_documentos
 from .utils import resource_path
@@ -51,6 +54,15 @@ class MainApp(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
         self.settings = config_manager.load_config()
+        self.profile_store = ProfileStore("DocsPropostas")
+        self.profile_store.migrate(self.settings)
+        self.profile = self.profile_store.active()
+        self.extra_context = {}
+        self.settings.update(
+            theme=self.profile["preferences"]["theme"],
+            template_path=self.profile["tools"]["docs"]["templates"],
+            output_path=self.profile["tools"]["docs"]["output"],
+        )
         sv_ttk.set_theme(self.settings.get("theme", "light"))
         self.title("Gerador de Documentos de Proposta v2.3")
         self.geometry("900x800")  # Versão incrementada
@@ -70,6 +82,11 @@ class MainApp(TkinterDnD.Tk):
             tk.StringVar(),
             tk.StringVar(),
         )
+        ttk.Button(
+            self,
+            text="Definições · " + self.profile["name"],
+            command=self.open_settings,
+        ).pack(anchor="e", padx=12, pady=4)
         self._criar_widgets()
         self.drop_target_register(DND_FILES)
         self.dnd_bind("<<Drop>>", self.handle_drop)
@@ -262,7 +279,12 @@ class MainApp(TkinterDnD.Tk):
     def _parsear_alvara_de_excel(self, alvara_strings):
         parsed_data = []
         # Mapa para encontrar rapidamente a categoria pelo seu número
-        cat_map = {re.match(r"\d+", key).group(): key for key in ALVARA_DATA}
+        catalog = self.profile["tools"]["docs"]["catalog"] or ALVARA_DATA
+        cat_map = {
+            re.match(r"\d+", key).group(): key
+            for key in catalog
+            if re.match(r"\d+", key)
+        }
 
         for s in alvara_strings:
             s_lower = s.lower()
@@ -285,7 +307,8 @@ class MainApp(TkinterDnD.Tk):
             # Mapa para encontrar subcategorias da categoria atual
             sub_map = {
                 re.match(r"\d+", sub["name"]).group(): sub
-                for sub in ALVARA_DATA[full_cat_name]
+                for sub in catalog[full_cat_name]
+                if re.match(r"\d+", sub["name"])
             }
 
             for sub_num in sub_nums:
@@ -372,35 +395,32 @@ class MainApp(TkinterDnD.Tk):
             self.settings["output_path"] = os.path.dirname(path)
         try:
             self.log(f"A carregar dados de: {os.path.basename(path)}")
-            df = pd.read_excel(path, sheet_name="Doc Proposta", header=None).replace(
-                {np.nan: None}
-            )
-            self.id_interno_var.set(df.iloc[2, 10] or "")
-            self.nome_empreitada_var.set(df.iloc[3, 10] or "")
-            self.local_obra_var.set(df.iloc[5, 11] or "")
-            self.duracao_empreitada_var.set(str(df.iloc[13, 13] or ""))
-            docs_list = extrair_lista_de_documentos_pandas(
-                df, col_index=9, start_row=24, end_row=44
-            )
+            mapper = Mapper(self.profile, path)
+            try:
+                data = mapper.proposal()
+            finally:
+                mapper.close()
+            self.extra_context = data
+            self.id_interno_var.set(data.get("ID_INTERNO", ""))
+            self.nome_empreitada_var.set(data.get("NOME_DA_EMPREITADA", ""))
+            self.local_obra_var.set(data.get("LOCAL_DA_OBRA", ""))
+            self.duracao_empreitada_var.set(data.get("DURACAO_DA_EMPREITADA", ""))
+            documents = data.get("DOCUMENTOS_DA_PROPOSTA", [])
             self.docs_text.delete("1.0", tk.END)
-            self.docs_text.insert("1.0", docs_list)
-            self.log("Dados carregados com sucesso para os campos.")
-
-            # ### ALTERAÇÃO: Carregar dados de alvará ###
-            alvara_raw_data = (
-                df.iloc[24:36, 12].dropna().astype(str).tolist()
-            )  # M25:M36 -> index [24:36, 12]
-            if alvara_raw_data:
-                self.log("A extrair dados de alvará do Excel...")
-                self.alvara_selecoes = self._parsear_alvara_de_excel(alvara_raw_data)
-                self._update_alvara_display()
-                self.log(
-                    f"{len(self.alvara_selecoes)} habilitações de alvará carregadas do Excel."
+            self.docs_text.insert(
+                "1.0",
+                "\n".join(documents) if isinstance(documents, list) else documents,
+            )
+            alvara = data.get("HABILITACOES", [])
+            self.alvara_selecoes = []
+            if self.profile["tools"]["docs"]["alvara"] and alvara:
+                self.alvara_selecoes = (
+                    alvara
+                    if isinstance(alvara[0], dict)
+                    else self._parsear_alvara_de_excel(alvara)
                 )
-            else:
-                # Se não houver dados no Excel, limpa as seleções existentes
-                self.alvara_selecoes = []
-                self._update_alvara_display()
+            self._update_alvara_display()
+            self.log("Dados carregados pelo perfil " + self.profile["name"])
 
         except Exception as e:
             self.log(f"ERRO ao ler o Excel: {e}")
@@ -434,7 +454,12 @@ class MainApp(TkinterDnD.Tk):
 
     def abrir_janela_alvara(self):
         # ### ALTERAÇÃO: Passar dados existentes para a janela de alvará ###
-        app = AlvaraApp(self, sv_ttk.get_theme(), initial_data=self.alvara_selecoes)
+        app = AlvaraApp(
+            self,
+            sv_ttk.get_theme(),
+            initial_data=self.alvara_selecoes,
+            catalog=self.profile["tools"]["docs"]["catalog"] or ALVARA_DATA,
+        )
         self.alvara_selecoes = app.selecoes
         self._update_alvara_display()
 
@@ -475,9 +500,7 @@ class MainApp(TkinterDnD.Tk):
         self.log_area.config(state="normal")
         self.log_area.delete(1.0, tk.END)
         self.log_area.config(state="disabled")
-        template_path = os.getenv("DOCSPROPOSTAS_TEMPLATES") or self.settings.get(
-            "template_path", ""
-        )
+        template_path = self.settings.get("template_path", "")
         if not template_path or not os.path.isdir(template_path):
             template_path = filedialog.askdirectory(
                 title="Selecione a pasta dos modelos Word"
@@ -485,13 +508,20 @@ class MainApp(TkinterDnD.Tk):
             if not template_path:
                 return
             self.settings["template_path"] = template_path
+        manual = Mapper(self.profile, "")
+        for name, mapping in self.profile["proposal"].items():
+            if mapping["kind"] in ("constant", "manual"):
+                self.extra_context[name] = manual.field(mapping)
         contexto = {
+            **self.extra_context,
             "ID_INTERNO": self.id_interno_var.get(),
             "NOME_DA_EMPREITADA": self.nome_empreitada_var.get(),
             "LOCAL_DA_OBRA": self.local_obra_var.get(),
             "DURACAO_DA_EMPREITADA": self.duracao_empreitada_var.get(),
             "DOCUMENTOS_DA_PROPOSTA": self.docs_text.get("1.0", tk.END).strip(),
-            "DATA_HOJE": datetime.now().strftime("%d de %B de %Y"),
+            "DATA_HOJE": datetime.now().strftime(
+                self.profile["tools"]["docs"]["date_format"]
+            ),
             "ALVARA_SELECOES": self.alvara_selecoes,
         }
         self.log("Dados recolhidos da interface.")
@@ -501,8 +531,35 @@ class MainApp(TkinterDnD.Tk):
             template_path,
             self.log,
             self.update_progress,
+            options=self.profile["tools"]["docs"],
         )
 
+    def open_settings(self):
+        self.profile["tools"]["docs"].update(
+            templates=self.settings.get("template_path", ""),
+            output=self.settings.get("output_path", ""),
+        )
+        self.profile_store.save(self.profile)
+        SettingsWindow(self, self.profile_store, "docs", self.apply_profile)
+
+    def apply_profile(self, profile):
+        self.profile = profile
+        options = profile["tools"]["docs"]
+        self.settings.update(
+            template_path=options["templates"], output_path=options["output"]
+        )
+        self.caminho_saida.set(options["output"] or "Nenhuma pasta selecionada")
+        sv_ttk.set_theme(profile["preferences"]["theme"])
+        self.extra_context = {}
+        self.limpar_campos_dados()
+        self.log("Perfil aplicado. Carregue novamente o Excel.")
+
     def on_closing(self):
+        self.profile["preferences"]["theme"] = self.settings.get("theme", "light")
+        self.profile["tools"]["docs"].update(
+            templates=self.settings.get("template_path", ""),
+            output=self.settings.get("output_path", ""),
+        )
+        self.profile_store.save(self.profile)
         config_manager.save_config(self.settings)
         self.destroy()

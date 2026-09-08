@@ -70,3 +70,15 @@ def test_existing_document_not_overwritten(tmp_path, monkeypatch):
 
 def test_no_company_alvara_classes_distributed():
     assert all(item["class"] == "" for items in ALVARA_DATA.values() for item in items)
+
+
+def test_late_template_failure_leaves_no_partial_batch(tmp_path, monkeypatch):
+    root = demo(tmp_path)
+    monkeypatch.setattr(data_logic, "messagebox", Mock())
+    bad = Document()
+    bad.add_paragraph("{{ MISSING_FIELD }}")
+    bad.save(root / "modelos" / "zz_invalid.docx")
+    assert not data_logic.gerar_documentos(
+        context(), str(root / "saida"), str(root / "modelos"), Mock(), Mock()
+    )
+    assert not list((root / "saida").glob("*.docx"))

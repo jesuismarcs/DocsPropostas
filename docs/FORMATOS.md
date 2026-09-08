@@ -1,3 +1,5 @@
+> Referência da edição inicial. Para a interface, configurações e comportamento da edição configurável, consulte [Configuração](CONFIGURACAO.md). As funções de compatibilidade podem continuar disponíveis no código, mas não definem todos os fluxos da nova interface.
+
 # Contrato de dados: Excel e Word
 
 ## Excel de entrada
