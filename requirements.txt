@@ -8,3 +8,5 @@ tkinterdnd2>=0.4,<1
 python-dotenv>=1,<2
 xlrd>=2,<3
 
+
+keyring>=25,<26

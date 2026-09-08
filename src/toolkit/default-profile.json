@@ -1,0 +1,447 @@
+{
+  "version": 1,
+  "id": "marcos",
+  "name": "Padrão Marcos",
+  "sources": {
+    "main": "",
+    "contacts": ""
+  },
+  "rules": {
+    "decimal": ",",
+    "thousands": ".",
+    "date_format": "%d/%m/%Y",
+    "separator": ";",
+    "hidden": "include",
+    "merged": "anchor",
+    "blank_rows": "skip"
+  },
+  "proposal": {
+    "ID_INTERNO": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "cell",
+      "address": "K3",
+      "type": "text",
+      "required": false
+    },
+    "NOME_DA_EMPREITADA": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "cell",
+      "address": "K4",
+      "type": "text",
+      "required": false
+    },
+    "LOCAL_DA_OBRA": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "cell",
+      "address": "L6",
+      "type": "text",
+      "required": false
+    },
+    "DURACAO_DA_EMPREITADA": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "cell",
+      "address": "N14",
+      "type": "text",
+      "required": false
+    },
+    "PRAZO": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "cell",
+      "address": "N16",
+      "type": "date",
+      "required": false
+    },
+    "DOCUMENTOS_DA_PROPOSTA": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "range",
+      "address": "J25:J45",
+      "type": "list",
+      "required": false
+    },
+    "HABILITACOES": {
+      "source": "main",
+      "sheet": "Doc Proposta",
+      "kind": "range",
+      "address": "M25:M36",
+      "type": "list",
+      "required": false
+    }
+  },
+  "items": {
+    "source": "main",
+    "sheet": "Lista de Items",
+    "kind": "range",
+    "address": "",
+    "header_row": 1,
+    "first_row": 2,
+    "last_row": 0,
+    "columns": {
+      "ID": "ID",
+      "Código": "Código",
+      "Descrição": "Descrição",
+      "Unidade": "Unidade",
+      "Quantidade": "Quantidade"
+    }
+  },
+  "contacts": {
+    "source": "contacts",
+    "sheet": "Contactos",
+    "kind": "range",
+    "address": "",
+    "header_row": 1,
+    "first_row": 2,
+    "last_row": 0,
+    "columns": {
+      "ID": "ID",
+      "Email": "Email",
+      "Especialidade": "Especialidade"
+    }
+  },
+  "tools": {
+    "docs": {
+      "templates": "",
+      "output": "",
+      "selected_models": "",
+      "filename": "{ID_INTERNO}_{modelo}_{LOCAL_DA_OBRA}.docx",
+      "date_format": "%d de %B de %Y",
+      "alvara": true,
+      "catalog": {}
+    },
+    "email": {
+      "output": "",
+      "base_folder": "",
+      "deadline_days": 2,
+      "subject": "{id_interno} - Pedido de preços - \"{nome_empreitada}\" - \"{id_cliente}\"",
+      "signature": "Equipa de Orçamentação",
+      "body": "Exmo(a). Sr(a),\n\nVimos pelo presente, solicitar o vosso melhor orçamento para o fornecimento e execução / montagem / assentamento de trabalhos da vossa especialidade, para o concurso supracitado.\n\nAgradecemos o envio do V/ cotação até ao dia {dia} de {mes} se possível.\n\nSe não Vos for possível responder ao orçamento, agradecemos que nos informassem.\n\nDesde já, agradecemos a vossa colaboração em fase de concurso e valorizaremos no processo de compra. Informaremos caso a empreitada seja adjudicada à nossa empresa.\n\nEnviamos em anexo a documentação relevante ao orçamento. Na eventualidade de ser necessária informação adicional, não hesite em entrar em contacto.\n{bloco_link}\n\nCom os melhores cumprimentos,",
+      "reply_to": "",
+      "cc": "",
+      "bcc": "",
+      "recipient_mode": "bcc",
+      "excel_template": "",
+      "report_template": "",
+      "output_sheet": "Pedido de Preços",
+      "output_cell": "B8",
+      "output_columns": "Código;Descrição;Unidade;Quantidade",
+      "filename": "{id_interno}_{id_cliente}_{especialidade}.xlsx",
+      "received_folder": "2/Recebidas/{especialidade}",
+      "smtp": {
+        "host": "",
+        "port": 465,
+        "security": "ssl",
+        "username": "",
+        "from": "",
+        "auth": true
+      },
+      "imap": {
+        "host": "",
+        "port": 993,
+        "security": "ssl",
+        "username": "",
+        "folder": "INBOX",
+        "auth": true
+      }
+    },
+    "excel": {
+      "preserve_styles": true,
+      "contacts": {
+        "sheet": "",
+        "range": "A1:B20",
+        "kind": "range",
+        "idColumn": "A",
+        "emailColumn": "B",
+        "destinationSheet": "Contactos",
+        "destinationCell": "A1",
+        "mode": "blocks",
+        "blocks": "C4;F4;I4;L4;C22;F22;I22;L22;C40;F40;I40;L40"
+      },
+      "cronograma": {
+        "fields": [
+          {
+            "label": "Empreitada",
+            "value": "",
+            "type": "text",
+            "required": true,
+            "destinations": [
+              {
+                "sheet": "Folha1",
+                "address": "J18"
+              }
+            ]
+          },
+          {
+            "label": "Revisão de preços",
+            "value": "",
+            "type": "text",
+            "required": true,
+            "destinations": [
+              {
+                "sheet": "Folha1",
+                "address": "M22"
+              }
+            ]
+          },
+          {
+            "label": "Data",
+            "value": "",
+            "type": "today",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Folha1",
+                "address": "N64"
+              }
+            ]
+          }
+        ]
+      },
+      "estaleiro": {
+        "fields": [
+          {
+            "label": "Valor",
+            "type": "number",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Estaleiro",
+                "address": "I7"
+              },
+              {
+                "sheet": "Doc Proposta",
+                "address": "K8"
+              }
+            ]
+          },
+          {
+            "label": "Prazo de execução",
+            "type": "number",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Estaleiro",
+                "address": "I8"
+              },
+              {
+                "sheet": "Doc Proposta",
+                "address": "N14"
+              }
+            ]
+          },
+          {
+            "label": "Data de entrega",
+            "type": "date",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Estaleiro",
+                "address": "I9"
+              },
+              {
+                "sheet": "Doc Proposta",
+                "address": "N16"
+              }
+            ]
+          },
+          {
+            "label": "Hora de entrega",
+            "type": "time",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Estaleiro",
+                "address": "I10"
+              },
+              {
+                "sheet": "Doc Proposta",
+                "address": "O16"
+              }
+            ]
+          },
+          {
+            "label": "ID interno",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "K3"
+              }
+            ]
+          },
+          {
+            "label": "Local",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "L6"
+              }
+            ]
+          },
+          {
+            "label": "Empreitada",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "K4"
+              },
+              {
+                "sheet": "Doc Proposta",
+                "address": "L4"
+              },
+              {
+                "sheet": "Cronograma",
+                "address": "J15"
+              }
+            ]
+          },
+          {
+            "label": "Plataforma",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "N8"
+              }
+            ]
+          },
+          {
+            "label": "Entidade",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "N12"
+              }
+            ]
+          },
+          {
+            "label": "Critério de adjudicação",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "K18"
+              }
+            ]
+          },
+          {
+            "label": "Data do anúncio",
+            "type": "date",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "N20"
+              }
+            ]
+          },
+          {
+            "label": "Tipo de obra",
+            "type": "text",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Doc Proposta",
+                "address": "K41"
+              },
+              {
+                "sheet": "Cronograma",
+                "address": "M19"
+              }
+            ]
+          },
+          {
+            "label": "Data de geração",
+            "type": "today",
+            "value": "",
+            "required": false,
+            "destinations": [
+              {
+                "sheet": "Cronograma",
+                "address": "M65"
+              }
+            ]
+          }
+        ]
+      },
+      "format": {
+        "sheet": "Lista de Items",
+        "range": "",
+        "kind": "range",
+        "firstRow": 2,
+        "code": "Código",
+        "description": "Descrição",
+        "unit": "Unidade",
+        "quantity": "Quantidade",
+        "price": "Preço da Proposta",
+        "total": "Preço Total",
+        "summarySheet": "Resumo",
+        "summaryCell": "B3",
+        "chapterPattern": "^(?:[IVXLCDM]+|[0-9]+)$",
+        "color": "#FFE0C0",
+        "precision": 2,
+        "basePrice": "@J",
+        "multiplier": "@I",
+        "calculatePrice": true,
+        "configurePrint": true,
+        "printArea": "",
+        "headerSheet": "",
+        "headerCell": "P1"
+      },
+      "specialty": {
+        "sheet": "Lista de Items",
+        "range": "",
+        "kind": "range",
+        "firstRow": 2,
+        "idColumn": "B",
+        "copyColumns": "C;D;E;F",
+        "resultColumn": "J",
+        "quotes": 3,
+        "method": "MIN",
+        "selection": {},
+        "outputRow": 5,
+        "outputColumn": 3
+      },
+      "names": {
+        "sheet": "Nomes",
+        "range": "",
+        "kind": "range",
+        "nameColumn": "A",
+        "valueColumn": "B",
+        "mode": "blocks",
+        "pairs": "A:B;D:E;G:H;J:K;M:N",
+        "asReference": false,
+        "firstRow": 2
+      }
+    }
+  },
+  "preferences": {
+    "language": "pt-PT",
+    "theme": "light"
+  }
+}

@@ -52,7 +52,10 @@ class HabilitacaoRow(ttk.Frame):
         self.number_label.grid(row=0, column=0, padx=(0, 10), rowspan=2)
         ttk.Label(self, text="Categoria").grid(row=0, column=1, sticky="w")
         self.categoria_combo = ttk.Combobox(
-            self, values=list(ALVARA_DATA.keys()), state="readonly", width=35
+            self,
+            values=list(self.app_parent.catalog.keys()),
+            state="readonly",
+            width=35,
         )
         self.categoria_combo.grid(row=1, column=1, padx=5)
         self.categoria_combo.bind("<<ComboboxSelected>>", self.on_category_change)
@@ -89,7 +92,11 @@ class HabilitacaoRow(ttk.Frame):
         )
         if categoria and subcategoria_name:
             sub_info = next(
-                (s for s in ALVARA_DATA[categoria] if s["name"] == subcategoria_name),
+                (
+                    s
+                    for s in self.app_parent.catalog[categoria]
+                    if s["name"] == subcategoria_name
+                ),
                 None,
             )
             if sub_info:
@@ -104,7 +111,9 @@ class HabilitacaoRow(ttk.Frame):
         if not current_cat:
             self.subcategoria_combo["values"] = []
             return
-        all_subcats = [sub["name"] for sub in ALVARA_DATA.get(current_cat, [])]
+        all_subcats = [
+            sub["name"] for sub in self.app_parent.catalog.get(current_cat, [])
+        ]
         available_subcats = [
             s
             for s in all_subcats
@@ -141,8 +150,9 @@ class HabilitacaoRow(ttk.Frame):
 
 class AlvaraApp(tk.Toplevel):
     # ### ALTERAÇÃO: Adicionado `initial_data` ao construtor ###
-    def __init__(self, parent, theme, initial_data=None):
+    def __init__(self, parent, theme, initial_data=None, catalog=None):
         super().__init__(parent)
+        self.catalog = catalog if catalog is not None else ALVARA_DATA
         sv_ttk.set_theme(theme)
         self.title("Habilitações de Alvará")
         self.geometry("1000x650")
